@@ -1,0 +1,143 @@
+#include <iostream>
+#include <vector>
+#include <cstdlib>
+
+using namespace std;
+
+enum Tipo {carry, suporte, tanker};
+
+struct Pocao_vida {
+    string nome;
+    string valor_vida;
+
+    Pocao_vida(string nome, string valor_vida){
+        this->nome = nome;
+        this->valor_vida = valor_vida;
+    }
+
+};
+
+struct Pocao_mana {
+    string nome;
+    string valor_mana;
+
+    Pocao_mana (string nome, string valor_mana) {
+        this->nome = nome;
+        this->valor_mana = valor_mana;
+    }
+
+};
+
+struct heroi {
+
+    Tipo tipo;
+    string nome;
+    int vida;
+    int mana;
+    int habilidade;
+    int ultimate;
+    bool vivo;
+    int tempo_de_recarga;
+    int level;
+
+
+    heroi (string nome, Tipo tipo){
+        this->nome = nome;
+        this->tipo = tipo;
+        vida = 400 + rand() % 90;
+        mana = 150 + rand() % 60;
+        habilidade = 50 + rand() % 30;
+        ultimate = 100 + rand() % 50;
+        vivo = true;
+        tempo_de_recarga = 20 + rand() % 50;
+    }
+
+    void sofrerataque(int value){
+        this->vida -= value;
+            if (vida < 0){
+                    vivo = false;
+                    cout << "foi eliminado!" << endl;
+            }
+    }
+
+    void usar_habilidade (heroi other){
+
+        cout << ""
+             << nome
+             << "{" << vida << "}" << "usou uma skill em "
+             << other.nome << "{" << other.vida << "}"
+             << "e causou "
+             <<habilidade << "de dano." << endl;
+
+        if (other.vivo){
+            other.vida -= habilidade;
+        }
+        if (!vivo){
+            cout << nome << "voltará a vida daqui a " << tempo_de_recarga << "segundos." << endl;
+        }
+        if (!other.vivo){
+             cout << other.nome << "voltará a vida daqui a " << other.tempo_de_recarga << "segundos " << endl;
+        }
+
+    }
+
+    void ultar (heroi other){
+
+        cout << nome << "{" << vida << "}" << "ultou" << other.nome << "{" << other.vida << "}" << "e causou " <<
+             ultimate << "de dano." << endl;
+        if (other.vivo){
+            other.vida -= ultimate;
+        }            cout << nome << "voltará a vida daqui a " << tempo_de_recarga << "segundos." << endl;
+
+
+        if (!vivo){
+        }
+
+        if (!other.vivo){
+             cout << other.nome << "voltará a vida daqui a " << other.tempo_de_recarga << "segundos " << endl;
+        }
+
+    }
+
+    void recarregar_vida(Pocao_vida pocao){
+        if (!vivo){
+            cout << "Não foi possível usar o pote."
+                 << nome << "voltará a vida daqui a "
+                 << tempo_de_recarga
+                 << "segundos."
+                 << endl;
+
+            return;
+
+        } else {
+            this->vida+=pocao.valor_vida;
+
+            cout << "Não foi possível usar o pote."
+                 << nome
+                 << "utilizou um pote e passou a ter "
+                 << vida
+                 << "de vida."
+                 << endl;
+        }
+    }
+
+    void subirlevel (){
+        if (!vivo){
+            cout << nome << "voltará a vida daqui a "
+            << tempo_de_recarga
+            << "segundos."
+            << endl;
+
+        }
+
+        level += 1;
+        cout << nome << "subiu de level." << endl;
+    }
+
+};
+
+int main(){
+
+    srand(time(NULL));
+
+}
