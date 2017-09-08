@@ -1,0 +1,136 @@
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+template <class T>
+T read (){
+    T t;
+    cin >> t;
+    return t;
+}
+
+class Transacao {
+public:
+    int id;
+    string cliente;
+    float valor;
+
+    Transacao(int id, string cliente, float valor){
+        this->id = id;
+        this->cliente = cliente;
+        this->valor = valor;
+    }
+
+};
+
+
+//FALTA AJEITAR O NEGOCIO DO ID QUE EU NÃO SEI 
+
+
+class Sistema {
+public:
+    int nextdl;
+    float saldoPtolomeu;
+    /*A variável nextId guarda o valor do próximo id de transação.
+    Cada nova transação ela aumenta de 1.*/
+
+    vector <Transacao> transacoes;
+    float balanco;
+
+    vector<Transacao>getTrans(){
+        return this->transacoes;
+    }
+
+    void addTran(int id, string cliente, float valor){
+        if (valor < 0){
+            if (this->saldoPtolomeu >= valor){
+                this->saldoPtolomeu -= valor;
+                transacoes.push_back(Transacao(id, cliente,valor));
+                
+
+            } else {
+                cout << "Não há dinheiro suficiente para empréstimo." << endl;
+            }
+
+        } else {
+            this->saldoPtolomeu += valor;
+            transacoes.push_back(Transacao(id, cliente, valor));
+            //add no vetor de transaçoes
+        }
+
+    }
+
+};
+
+int main(){
+    Sistema sis;
+    string op;
+    cout << "Digite help ou comando: " << endl;
+
+    while (op != "fim"){
+        cin >> op;
+
+        if (op == "help"){
+            cout << "*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*" << endl
+                 << ">> iniciar $valor" << endl
+                 << ">> addTran $nome $valor" << endl
+                 << ">> showTran" << endl
+                 << ">> rmTran $id" << endl
+                 << ">> showCli $nome"<< endl
+                 << ">> balanco"<< endl
+                 << ">> contarCli"<< endl
+                 << "*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*" << endl
+                 << endl;
+        }
+
+        if (op == "iniciar"){
+            //AQUI TEM QUE REMOVER OS ELEMENTOS DO VETOR
+            float valor;
+            cin >> valor;
+            cout << "Sistema iniciado com R$ " << valor << endl;
+            //AQUI TEM QUE ADICIONAR O VALOR AO SALDO DO PTOLOMEU
+        }
+
+        if (op == "addTran"){
+            int id;
+            string cliente;
+            float valor;
+
+            cin >> id;
+            cin >> cliente;
+            cin >> valor;
+            sis.addTran(id, cliente, valor);
+        }
+
+        if (op == "showTran"){
+
+        }
+
+        if (op == "rmTran"){
+
+        }
+
+        if (op == "showCli"){
+
+        }
+
+        if (op == "balanco"){
+
+        }
+
+        if (op == "contarCli"){
+
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
