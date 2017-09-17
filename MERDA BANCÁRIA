@@ -1,0 +1,526 @@
+#include <iostream>
+#include <vector>
+#include <sstream>
+
+using namespace std;
+
+template <class T>
+T read(){
+    T t;
+    cin >> t;
+    return t;
+}
+
+struct Operacao{
+    string descricao;
+    float valor;
+    
+    Operacao(string descricao = "", float valor = 0){
+        this->descricao = descricao;
+        this->valor = valor;
+    }
+    
+    string getOperacao (){
+        stringstream ss;
+        ss << this->descricao << this->valor << endl;
+        return ss.str();
+    }
+};
+
+class Conta{
+    
+private:
+    int id;
+    bool ativa;
+    float saldo{0};
+    vector<Operacao> extrato;
+    
+public:
+    Conta(int id = 0, bool ativa = true){
+        this->id = id;
+        this->ativa = ativa;
+    }
+    
+    void addOperacao(string descricao, float valor){
+        extrato.push_back(Operacao (descricao, valor));
+    }
+    
+    float getSaldo(){
+        return this->saldo;
+    }
+    
+    bool getAtiva(){
+        return this->ativa;
+    }
+    
+    void setAtiva(bool ativa){
+        this->ativa = ativa;
+    }
+    
+    int getId(){
+        return this->id;
+    }
+    
+    void setId(int id){
+        this->id = id;
+    }
+    
+    bool saque(float valor){
+        if((this->saldo < valor) || (valor < 0))
+            return false;
+        
+        this->saldo -= valor;
+        this->extrato.push_back(Operacao("Saque: -", valor));
+        
+        return true;
+    }
+    
+    bool deposito(float valor){
+        if(valor <= 0)
+            return false;
+        
+        this->saldo += valor;
+        this->extrato.push_back(Operacao("Deposito: +", valor));
+        return true;
+    }
+    
+    string getExtrato(){
+        stringstream ss;
+        for (int i = 0; i < (int) extrato.size(); i++){
+            ss << extrato[i].getOperacao();
+        }
+        
+        return ss.str();
+    }
+    
+    string getExtratoN(int valor){
+        stringstream ss;
+        int posicaoQueInicia = (int)(extrato.size() - valor);
+        if(posicaoQueInicia < 0)
+            posicaoQueInicia = 0;
+        
+        for(; posicaoQueInicia < (int)extrato.size(); posicaoQueInicia++){
+            ss << extrato[posicaoQueInicia].getOperacao();
+        }
+        return ss.str();
+        
+    }
+    
+    bool transferencia(float value, Conta &other){
+        if (this->saldo >= value){
+            
+            this->saldo -= value;
+            
+            other.deposito(value);
+            other.addOperacao("Receber Transferência: ", value);
+            addOperacao("Transferência: ", value);
+            
+            return true;
+        }
+        
+        return false;
+    }
+};
+
+class Cliente{
+    
+public:
+    string cpf;
+    vector<Conta> contas;
+    
+    Cliente(string cpf = ""){
+        this->cpf = cpf;
+    }
+    string getCpf(){
+        return this->cpf;
+    }
+    bool addConta(int numero){
+        contas.push_back(Conta(numero, true));
+        return true;
+    }
+    
+    string mostrarContas(){
+        stringstream ss;
+        for(int i = 0; i < (int) contas.size(); i++){
+            ss << " " << contas[i].getId();
+        }
+        return ss.str();
+    }
+    
+    string mostrarDadosCliente(){
+        stringstream ss;
+        
+        float saldo_total = 0;
+        ss << "Cliente: " << cpf<< endl;
+        for(int i = 0; i < (int) contas.size(); i++){
+            string status;
+            if(contas[i].getAtiva())
+                status = "Ativa";
+            else
+                status = "Desativa";
+            
+            saldo_total += contas[i].getSaldo();
+            
+            ss << "Conta: " << contas[i].getId() << ", saldo: " << contas[i].getSaldo() << ", status: " << status << endl;
+        }
+        
+        ss << "Saldo Total: "<< saldo_total << endl;
+        
+        return ss.str();
+    }
+    
+    int getPosConta(int numero){
+        
+        for(int i = 0; i < (int) contas.size(); i++){
+            if(numero == contas[i].getId()){
+                return i;
+            }
+        }
+        
+        return -1;
+    }
+    
+    
+    int encerrarConta(int numero){
+        for(int i = 0; i < (int) contas.size(); i++){
+            if(numero == contas[i].getId()){
+                if(contas[i].getSaldo() == 0){
+                    if(contas[i].getAtiva() == true){
+                        contas[i].setAtiva(false);
+                        
+                        return contas[i].getId();
+                    }else{
+                        return -3; // encerrada
+                    }
+                }else{
+                    return -2; // saldo positiva
+                }
+            }
+        }
+        
+        return -1; // conta invalida
+    }
+};
+
+class Agencia{
+public:
+    int numeroConta = 1;
+    vector<Cliente> clientes;
+    
+    Agencia(){
+    }
+    
+    string mostrarClientes(){
+        stringstream ss;
+        for(int i = 0; i < (int)clientes.size(); i++){
+            ss << i+1 << " - " << clientes[i].getCpf() << " [";
+            ss << clientes[i].mostrarContas();
+            ss << " ]" << endl;
+        }
+        
+        return ss.str();
+        
+    }
+    
+    Cliente& buscarCliente(int pos){
+        static Cliente c;
+        
+        if(pos >=0 && pos < (int) clientes.size())
+            return clientes[pos];
+        else
+            return c;
+    }
+    
+    int buscarPosCliente(string cpf){
+        for(int i = 0; i < (int) clientes.size(); i++){
+            
+            if(clientes[i].getCpf() == cpf){
+                return i;
+            }
+        }
+        
+        return -1;
+    }
+    
+    int abrirConta(string cpf){
+        for(int i = 0; i < (int) clientes.size(); i++){
+            if(clientes[i].getCpf() == cpf){
+                clientes[i].addConta(numeroConta);
+                numeroConta += 1;
+                return numeroConta - 1;
+            }
+        }
+        
+        return -1;
+    }
+    
+    bool addCliente(string cpf){
+        for(int i = 0; i < (int) clientes.size(); i++){
+            
+            if(clientes[i].getCpf() == cpf){
+                return false;
+            }
+        }
+        
+        clientes.push_back(cpf);
+        
+        abrirConta(cpf);
+        
+        return true;
+    }
+    
+    void procurarPosContaDestino(int numero, int* pos_cliente, int* pos_conta){
+        
+        for(int i = 0; i < (int) clientes.size(); i++){
+            
+            if(clientes[i].getPosConta(numero) != -1){
+                *pos_cliente = i;
+                *pos_conta = clientes[i].getPosConta(numero);
+                
+                return;
+            }
+        }
+        
+        *pos_cliente = -1;
+        *pos_conta = -1;
+        
+    }
+    
+};
+
+
+int main(){
+    
+    Agencia agencia;
+    
+    int cliente_logado = -1;
+    
+    string op;
+    
+    cout << "digite help" << endl;
+    while(op != "fim"){
+        cin >> op;
+        
+        if(op == "help"){
+            cout    << "addCli $cpf" << endl
+                    << "abrirConta $cpf" << endl
+                    << "encerrarConta $conta" << endl
+                    << "login _cpf" << endl
+                    << "logout" << endl
+                    << "saldo _conta" << endl
+                    << "saque _conta _valor" << endl
+                    << "deposito _conta _valor" << endl
+                    << "extrato _conta" << endl
+                    << "UltimoExtrato _valor" << endl
+                    << "fim" << endl;
+        }
+        
+        if(op == "login"){
+            cliente_logado = agencia.buscarPosCliente(read<string>());
+            
+            if(cliente_logado >= 0){
+                cout << "ok" << endl;
+            }else{
+                cout << "cpf inválido" << endl;
+            }
+        }
+        
+        if(op == "logout"){
+            if(cliente_logado >= 0){
+                cliente_logado = -1;
+                cout << "ok" << endl;
+            }else{
+                cout << "nenhum cliente logado" << endl;
+            }
+        }
+        
+        if(op == "saldo"){
+            int num_conta, pos_conta;
+            cin >> num_conta;
+            
+            if(cliente_logado >= 0){
+                pos_conta = agencia.clientes[cliente_logado].getPosConta(num_conta);
+                
+                if(pos_conta != -1)
+                    cout << agencia.clientes[cliente_logado].contas[pos_conta].getSaldo() << endl;
+                else
+                    cout << "Número da conta inválido" << endl;
+            }else{
+                cout << "nenhum cliente logado" << endl;
+            }
+        }
+        
+        if(op == "saque"){
+            int num_conta, pos_conta;
+            float valor;
+            
+            cin >> num_conta;
+            cin >> valor;
+            
+            if(cliente_logado >= 0){
+                pos_conta = agencia.clientes[cliente_logado].getPosConta(num_conta);
+                
+                if(pos_conta != -1){
+                    bool verificar = agencia.clientes[cliente_logado].contas[pos_conta].saque(valor);
+                    if(verificar)
+                        cout << "saque realizado com sucesso" << endl;
+                    else
+                        cout << "saque não realizado" << endl;
+                }else{
+                    cout << "Número da conta inválido" << endl;
+                }
+            }else{
+                cout << "nenhum cliente logado" << endl;
+            }
+        }
+        
+        if(op == "deposito"){
+            int num_conta, pos_conta;
+            float valor;
+            
+            cin >> num_conta;
+            cin >> valor;
+            
+            if(cliente_logado >= 0){
+                pos_conta = agencia.clientes[cliente_logado].getPosConta(num_conta);
+                
+                if(pos_conta != -1){
+                    bool verificar = agencia.clientes[cliente_logado].contas[pos_conta].deposito(valor);
+                    if(verificar)
+                        cout << "deposito realizado com sucesso" << endl;
+                    else
+                        cout << "deposito não realizado" << endl;
+                }else{
+                    cout << "Número da conta inválido" << endl;
+                }
+            }else{
+                cout << "nenhum cliente logado" << endl;
+            }
+        }
+        
+        
+        if(op == "extrato"){
+            
+            int num_conta, pos_conta;
+            cin >> num_conta;
+            
+            if(cliente_logado >= 0){
+                pos_conta = agencia.clientes[cliente_logado].getPosConta(num_conta);
+                
+                if(pos_conta != -1){
+                    cout << agencia.clientes[cliente_logado].contas[pos_conta].getExtrato();
+                }else{
+                    cout << "Número da conta inválido" << endl;
+                }
+            }else{
+                cout << "nenhum cliente logado" << endl;
+            }
+            
+        }
+        
+        if(op == "UltimoExtrato"){
+            int num_conta, pos_conta;
+            cin >> num_conta;
+            int valor;
+            cin >> valor;
+            
+            if(cliente_logado >= 0){
+                pos_conta = agencia.clientes[cliente_logado].getPosConta(num_conta);
+                
+                if(pos_conta != -1){
+                    cout << agencia.clientes[cliente_logado].contas[pos_conta].getExtratoN(valor);
+                }else{
+                    cout << "Número da conta inválido" << endl;
+                }
+            }else{
+                cout << "nenhum cliente logado" << endl;
+            }
+            
+        }
+        
+        if(op == "addCli"){
+            cout << (agencia.addCliente(read<string>())? "Cliente adicionado" : "cpf duplicado") << endl;
+        }
+        
+        if(op == "abrirConta"){
+            int aux = agencia.abrirConta(read<string>());
+            if(aux == -1){
+                cout << "erro" << endl;
+            }else{
+                cout << "conta " << aux << " aberta" << endl;
+            }
+            
+        }
+        
+        if(op == "encerrarConta"){
+            
+            if(cliente_logado >= 0){
+                
+                int aux = agencia.clientes[cliente_logado].encerrarConta(read<int>());
+                
+                if(aux < 0){
+                    if(aux == -1)
+                        cout << "conta invalida" << endl;
+                    if(aux == -2)
+                        cout << "saldo positivo" << endl;
+                    if(aux == -3)
+                        cout << "conta ja esta encerrada" << endl;
+                }else{
+                    cout << "conta " << aux << " encerrada" << endl;
+                }
+                
+            }else{
+                cout << "nenhum cliente logado" << endl;
+            }
+            
+        }
+        
+        if (op == "transferencia"){
+            int num_conta, pos_conta_origem;
+            int num_outraconta, pos_cliente_destino, pos_conta_destino;
+            float valor;
+            
+            cin >> num_conta >> num_outraconta >> valor;
+            
+            if(cliente_logado >= 0){
+                pos_conta_origem = agencia.clientes[cliente_logado].getPosConta(num_conta);
+                
+                if(pos_conta_origem != -1){
+                    agencia.procurarPosContaDestino(num_outraconta, &pos_cliente_destino, &pos_conta_destino);
+                    
+                    if(pos_cliente_destino != -1 && pos_conta_destino != -1){
+                        bool verificar = agencia.clientes[cliente_logado].contas[pos_conta_origem].transferencia(valor, agencia.clientes[pos_cliente_destino].contas[pos_conta_destino]);
+                        if(verificar)
+                            cout << "Transfência realizada com sucesso" << endl;
+                        else
+                            cout << "Transfência não realizada" << endl;
+                    }else{
+                        cout << "Número da conta de destino inválido" << endl;
+                    }
+                    
+                }else{
+                    cout << "Número da conta de origem inválido" << endl;
+                }
+            }else{
+                cout << "nenhum cliente logado" << endl;
+            }
+            
+        }
+        
+        if(op == "showAllCli"){
+            cout << agencia.mostrarClientes();
+        }
+        
+        if(op == "show"){
+            if(cliente_logado >= 0){
+                cout << agencia.clientes[cliente_logado].mostrarDadosCliente();
+            }else{
+                cout << "nenhum cliente logado" << endl;
+            }
+            
+            
+        }
+        
+    }
+    
+}
